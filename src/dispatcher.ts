@@ -52,10 +52,11 @@ export class Dispatcher {
             next(); 
         });
 
-        
+        /*
         this.app.use((req: Request, res: Response) => {
             res.status(404).json({ error: "HTTP 404 - Yönlendirilecek servis bulunamadı." });
         });
+        */
     }
 
     public start(port: number): void {
