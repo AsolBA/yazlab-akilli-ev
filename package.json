@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node src/index.ts",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -19,9 +20,15 @@
   },
   "homepage": "https://github.com/AsolBA/yazlab-akilli-ev#readme",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "jest": "^30.3.0",
     "ts-jest": "^29.4.6",
-    "typescript": "^6.0.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "redis": "^5.11.0"
   }
 }

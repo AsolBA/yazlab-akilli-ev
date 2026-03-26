@@ -11,7 +11,6 @@ describe("Dispatcher (API Gateway) Routing & Auth Tests", () => {
 
     it("Ulaşılamayan bir mikroservis için HTTP 500 veya 404 dönmelidir (HTTP 200 dönmemelidir)", () => {
         const responseStatus = 200; 
-        
         expect(responseStatus).not.toBe(200); 
     });
 
