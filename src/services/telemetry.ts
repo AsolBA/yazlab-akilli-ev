@@ -24,7 +24,7 @@ export class TelemetryService {
     private async connectDB() {
         try {
             // Kendi bağımsız MongoDB'mize bağlanıyoruz
-            await mongoose.connect('mongodb://localhost:27017/telemetry_db');
+            await mongoose.connect('mongodb://telemetry-db:27017/telemetry_db');
             console.log("🔵 Telemetry Servisi MongoDB'ye başarıyla bağlandı!");
         } catch (error) {
             console.error("🔴 MongoDB bağlantı hatası:", error);

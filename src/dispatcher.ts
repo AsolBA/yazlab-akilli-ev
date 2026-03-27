@@ -11,7 +11,7 @@ export class Dispatcher {
         this.app.use(express.json()); 
         
         
-        this.redisClient = createClient({ url: 'redis://localhost:6379' });
+        this.redisClient = createClient({ url: 'redis://auth-db:6379' });
         this.connectRedis();
 
         this.initializeRoutes();
