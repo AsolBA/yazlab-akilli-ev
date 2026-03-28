@@ -1,13 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// 1. Kural: Nesne Yönelimli Programlama (Interface Tanımı)
 export interface ISensorData extends Document {
-    sensorType: string; // Sıcaklık, Nem, Işık
+    sensorType: string;
     value: number;
     timestamp: Date;
 }
 
-// 2. Kural: MongoDB Şeması (Veri İzolasyonu)
 const SensorSchema: Schema = new Schema({
     sensorType: { type: String, required: true },
     value: { type: Number, required: true },
@@ -23,7 +21,6 @@ export class TelemetryService {
 
     private async connectDB() {
         try {
-            // Kendi bağımsız MongoDB'mize bağlanıyoruz
             await mongoose.connect('mongodb://telemetry-db:27017/telemetry_db');
             console.log("🔵 Telemetry Servisi MongoDB'ye başarıyla bağlandı!");
         } catch (error) {
@@ -31,14 +28,31 @@ export class TelemetryService {
         }
     }
 
-    // Sensörden gelen veriyi kaydetme metodu
-    public async recordData(type: string, val: number): Promise<ISensorData> {
+    // ⭐ RMM SEVİYE 3 BURADA BAŞLIYOR ⭐
+    public async recordData(type: string, val: number): Promise<any> {
         const newData = new this.model({ sensorType: type, value: val });
-        return await newData.save();
+        const savedData = await newData.save();
+
+        // Veriyi düz objeye çevirip linkleri ekliyoruz
+        return {
+            ...savedData.toObject(),
+            _links: {
+                self: { href: `http://localhost:3000/api/telemetry/${savedData._id}`, method: "GET" },
+                delete: { href: `http://localhost:3000/api/telemetry/${savedData._id}`, method: "DELETE" },
+                all: { href: "http://localhost:3000/api/telemetry", method: "GET" }
+            }
+        };
     }
 
-    // Kayıtlı tüm verileri getirme metodu (JSON Array döner)
-    public async getAllData(): Promise<ISensorData[]> {
-        return await this.model.find().sort({ timestamp: -1 });
+    public async getAllData(): Promise<any> {
+        const allData = await this.model.find().sort({ timestamp: -1 });
+        
+        // Her bir veri satırı için de link ekleyelim (Tam profesyonel olsun)
+        return allData.map(item => ({
+            ...item.toObject(),
+            _links: {
+                details: { href: `http://localhost:3000/api/telemetry/${item._id}`, method: "GET" }
+            }
+        }));
     }
 }

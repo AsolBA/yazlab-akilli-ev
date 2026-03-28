@@ -10,7 +10,18 @@ services:
     networks:
       - iot-network
 
-  # 2. MongoDB: Senin Telemetry (Sensör) verilerin için
+  promtail:
+    image: grafana/promtail:latest
+    container_name: akilli-ev-promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - iot-network
+
+  # 2. MongoDB: Telemetry (Sensör) verileri için
   telemetry-db:
     image: mongo:latest
     container_name: akilli-ev-telemetry-mongo
@@ -31,6 +42,34 @@ services:
     environment:
       - REDIS_URL=redis://auth-db:6379
       - MONGO_URL=mongodb://telemetry-db:27017/telemetry_db
+    networks:
+      - iot-network
+    # LOGGING BURADA OLMALI (app'in altında,ports ile aynı hizada)
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
+    
+  
+  
+
+  # 4. Logları toplamak için Loki
+  loki:
+    image: grafana/loki:latest
+    container_name: akilli-ev-loki
+    ports:
+      - "3100:3100"
+    networks:
+      - iot-network
+
+  # 5. Senin Admin Paneli: Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: akilli-ev-grafana
+    ports:
+      - "4000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
       - iot-network
 

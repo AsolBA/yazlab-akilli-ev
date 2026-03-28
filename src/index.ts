@@ -22,3 +22,14 @@ gateway.app.post('/api/telemetry', async (req, res) => {
 });
 
 gateway.start(PORT);
+
+// Her isteği loglayan basit bir middleware
+gateway.app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        // Bu yazı Grafana tablosunda bir satır olarak gözükecek
+        console.log(`[LOG] ${req.method} ${req.url} - Status: ${res.statusCode} - Süre: ${duration}ms`);
+    });
+    next();
+});
