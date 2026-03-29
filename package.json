@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc",
+    "start:device": "ts-node src/deviceControl/index.ts",
     "test": "jest"
   },
   "repository": {
