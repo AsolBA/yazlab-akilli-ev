@@ -5,11 +5,66 @@ services:
   auth-db:
     image: redis:latest
     container_name: akilli-ev-redis
-    ports:
-      - "6379:6379"
     networks:
       - iot-network
 
+  # 2. MongoDB'ler (İzolasyon kuralı gereği ayrı ayrı)
+  telemetry-db:
+    image: mongo:latest
+    container_name: akilli-ev-telemetry-mongo
+    networks:
+      - iot-network
+
+  device-db:
+    image: mongo:latest
+    container_name: akilli-ev-device-mongo
+    networks:
+      - iot-network
+
+  # 3. API Gateway (Dispatcher)
+  gateway:
+    build: .
+    container_name: akilli-ev-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-db
+      - telemetry-service
+      - device-service
+    environment:
+      - REDIS_URL=redis://auth-db:6379
+    networks:
+      - iot-network
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.Name}}"
+
+  # 4. Telemetry Mikroservisi
+  telemetry-service:
+    build: .
+    command: npx ts-node src/services/telemetry.ts
+    container_name: akilli-ev-telemetry-service
+    environment:
+      - MONGO_URL=mongodb://telemetry-db:27017/telemetry_db
+    depends_on:
+      - telemetry-db
+    networks:
+      - iot-network
+
+  # 5. Device Control Mikroservisi
+  device-service:
+    build: .
+    command: npx ts-node src/deviceControl/index.ts
+    container_name: akilli-ev-device-service
+    environment:
+      - MONGO_URL=mongodb://device-db:27017/device_db
+    depends_on:
+      - device-db
+    networks:
+      - iot-network
+
+  # --- İZLEME (GRAFANA/LOKI) ---
   promtail:
     image: grafana/promtail:latest
     container_name: akilli-ev-promtail
@@ -21,48 +76,12 @@ services:
     networks:
       - iot-network
 
-  # 2. MongoDB: Telemetry (Sensör) verileri için
-  telemetry-db:
-    image: mongo:latest
-    container_name: akilli-ev-telemetry-mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - iot-network
-
-  # 3. Senin Uygulaman (Gateway + Telemetry Service)
-  app:
-    build: .
-    container_name: akilli-ev-main-app
-    ports:
-      - "3000:3000"
-    depends_on:
-      - auth-db
-      - telemetry-db
-    environment:
-      - REDIS_URL=redis://auth-db:6379
-      - MONGO_URL=mongodb://telemetry-db:27017/telemetry_db
-    networks:
-      - iot-network
-    # LOGGING BURADA OLMALI (app'in altında,ports ile aynı hizada)
-    logging:
-      driver: "json-file"
-      options:
-        tag: "{{.Name}}"
-    
-  
-  
-
-  # 4. Logları toplamak için Loki
   loki:
     image: grafana/loki:latest
     container_name: akilli-ev-loki
-    ports:
-      - "3100:3100"
     networks:
       - iot-network
 
-  # 5. Senin Admin Paneli: Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: akilli-ev-grafana

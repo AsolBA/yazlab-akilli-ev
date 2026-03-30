@@ -23,6 +23,7 @@
   "homepage": "https://github.com/AsolBA/yazlab-akilli-ev#readme",
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/express-http-proxy": "^1.6.7",
     "@types/jest": "^30.0.0",
     "@types/mongoose": "^5.11.96",
     "jest": "^30.3.0",
@@ -32,6 +33,7 @@
   },
   "dependencies": {
     "express": "^5.2.1",
+    "express-http-proxy": "^2.1.2",
     "mongoose": "^9.3.3",
     "redis": "^5.11.0"
   }
